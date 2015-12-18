@@ -91,7 +91,7 @@ PdfPrinter.prototype.createPdfKitDocument = function(docDefinition, options) {
 	this.pdfKitDoc = new PdfKit({ size: [ pageSize.width, pageSize.height ], compress: false});
 	this.pdfKitDoc.info.Producer = 'pdfmake';
 	this.pdfKitDoc.info.Creator = 'pdfmake';
-	
+
 	// pdf kit maintains the uppercase fieldnames from pdf spec
 	// to keep the pdfmake api consistent, the info field are defined lowercase
 	if(docDefinition.info){
@@ -102,7 +102,7 @@ PdfPrinter.prototype.createPdfKitDocument = function(docDefinition, options) {
 		this.pdfKitDoc.info.Subject = docDefinition.info.subject ? docDefinition.info.subject : null;
 		this.pdfKitDoc.info.Keywords = docDefinition.info.keywords ? docDefinition.info.keywords : null;
 	}
-	
+
 	this.fontProvider = new FontProvider(this.fontDescriptors, this.pdfKitDoc);
 
   docDefinition.images = docDefinition.images || {};
@@ -362,6 +362,39 @@ function renderVector(vector, pdfDoc) {
 					pdfDoc.closePath();
 				}
 			}
+			break;
+		case 'text':
+			var x = vector.x;
+			var y = vector.y;
+			var rotate = null;
+
+			if(vector.text === 'Volume'){
+				rotate = 270;
+			}
+
+
+			if (vector.align === 'middle') {
+				x -= pdfDoc.widthOfString(vector.text) / 2;
+			}
+
+			if (vector.align === 'end') {
+				x -= pdfDoc.widthOfString(vector.text);
+			}
+
+			y -= (pdfDoc.heightOfString(vector.text) / 2) + (vector.fontSize / 2);
+
+			pdfDoc.fill(vector.color);
+
+			if(vector.text === 'Volume'){
+				pdfDoc.rotate(rotate, {origin: [x, y]});
+			}
+
+			pdfDoc.fontSize(vector.fontSize).text(vector.text, x, y);
+
+			if(vector.text === 'Volume'){
+				pdfDoc.rotate(-rotate, {origin: [x, y]});
+			}
+
 			break;
 	}
 
